@@ -12,7 +12,7 @@
 namespace Rootwork\Test\Sfax;
 
 use GuzzleHttp\Psr7\Response;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 use Rootwork\Sfax\Client;
 use Rootwork\PHPUnit\Helper\Accessor;
 use Rootwork\Sfax\Exception\InvalidResponseException;
@@ -65,10 +65,10 @@ class ClientTest extends TestCase
     /**
      * Setup the test.
      */
-    public function setUp()
+    public function setUp(): void
     {
         $this->sut  = $this->getMockBuilder(Client::class)
-            ->setMethods(['getTokenDate'])
+            ->onlyMethods(['getTokenDate'])
             ->setConstructorArgs([
                 $this->uri,
                 $this->username,
