@@ -11,10 +11,12 @@
 
 namespace Rootwork\Test\Sfax;
 
+use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Rootwork\Sfax\Client;
-use Rootwork\PHPUnit\Helper\Accessor;
 use Rootwork\Sfax\Exception\InvalidResponseException;
 
 /**
@@ -24,7 +26,7 @@ use Rootwork\Sfax\Exception\InvalidResponseException;
  */
 class ClientTest extends TestCase
 {
-    use Accessor;
+    use ProphecyTrait;
 
     /**
      * Subject under test.
@@ -48,6 +50,9 @@ class ClientTest extends TestCase
     /** @var string */
     protected $iv = '3Eug*ZQbkOqIJzu2';
 
+    /** @var HttpClient */
+    protected $httpClientMock;
+
     /**
      * Token generated with $this->tokenDate.
      *
@@ -67,14 +72,19 @@ class ClientTest extends TestCase
      */
     public function setUp(): void
     {
-        $this->sut  = $this->getMockBuilder(Client::class)
+        $this->httpClientMock = $this->prophesize(HttpClient::class);
+
+        $this->sut = $this->getMockBuilder(Client::class)
             ->onlyMethods(['getTokenDate'])
             ->setConstructorArgs([
                 $this->uri,
                 $this->username,
                 $this->apiKey,
                 $this->encKey,
-                $this->iv
+                $this->iv,
+                '',
+                '',
+                $this->httpClientMock->reveal()
             ])->getMock();
 
         $this->sut->expects($this->any())->method('getTokenDate')
@@ -128,7 +138,6 @@ class ClientTest extends TestCase
 
         $uri .= '&OptionalParams=' . urlencode(implode(';', $optionParams));
 
-        $httpClient = $this->createMock('GuzzleHttp\Client');
         $expected   = (object) [
             'SendFaxQueueId'    => 'C3A81B76E088270C55BCFB7ABC158822',
             'isSuccess'         => true,
@@ -136,16 +145,11 @@ class ClientTest extends TestCase
         ];
         $response   = new Response(200, [], json_encode($expected));
 
-        $httpClient->expects($this->once())->method('request')->with(
-            'POST', $uri, $this->callback(function($data) {
-                if (isset($data['multipart'])) {
-                    return is_resource($data['multipart'][0]['contents']);
-                }
-                return false;
-            })
-        )->willReturn($response);
-
-        $this->setPropertyValue($this->sut, 'httpClient', $httpClient);
+        // using Argument::any due to resource from fopen not being injected into
+        // the current method signature
+        $this->httpClientMock->request('POST', $uri, Argument::any())
+            ->shouldBeCalled($this->once())
+            ->willReturn($response);
 
         $actual = $this->sut->sendFax($name, $number, $filePath, $barcode, $options);
 
@@ -195,7 +199,6 @@ class ClientTest extends TestCase
 
         $uri .= '&OptionalParams=' . urlencode(implode(';', $optionParams));
 
-        $httpClient = $this->createMock('GuzzleHttp\Client');
         $expected   = (object) [
             'SendFaxQueueId'    => 'C3A81B76E088270C55BCFB7ABC158822',
             'isSuccess'         => true,
@@ -203,10 +206,9 @@ class ClientTest extends TestCase
         ];
         $response   = new Response(200, [], json_encode($expected));
 
-        $httpClient->expects($this->once())->method('request')
-            ->with('POST', $uri)->willReturn($response);
-
-        $this->setPropertyValue($this->sut, 'httpClient', $httpClient);
+        $this->httpClientMock->request('POST', $uri)
+            ->shouldBeCalled($this->once())
+            ->willReturn($response);
 
         $actual = $this->sut->sendFaxFromUrl($name, $number, $fileType, $fileUrl, $barcode, $options);
 
@@ -229,7 +231,6 @@ class ClientTest extends TestCase
         $uri       .= '&EndDateUTC=' . urlencode($endDate);
         $uri       .= '&MaxItems=' . urlencode($maxItems);
 
-        $httpClient = $this->createMock('GuzzleHttp\Client');
         $expected   = (object) [
             'InboundFaxItems'   => [
                 (object) [
@@ -281,10 +282,9 @@ class ClientTest extends TestCase
         ];
         $response   = new Response(200, [], json_encode($expected));
 
-        $httpClient->expects($this->once())->method('request')
-            ->with('GET', $uri)->willReturn($response);
-
-        $this->setPropertyValue($this->sut, 'httpClient', $httpClient);
+        $this->httpClientMock->request('GET', $uri)
+            ->shouldBeCalled($this->once())
+            ->willReturn($response);
 
         $actual = $this->sut->receiveInboundFax($watermarkId, $startDate, $endDate, $maxItems);
 
@@ -360,11 +360,9 @@ class ClientTest extends TestCase
         ];
         $response   = new Response(200, [], json_encode($expected));
 
-        $httpClient = $this->createMock('GuzzleHttp\Client');
-        $httpClient->expects($this->once())->method('request')
-            ->with('GET', $uri)->willReturn($response);
-
-        $this->setPropertyValue($this->sut, 'httpClient', $httpClient);
+        $this->httpClientMock->request('GET', $uri)
+            ->shouldBeCalled($this->once())
+            ->willReturn($response);
 
         $actual = $this->sut->receiveOutboundFax($watermarkId, $startDate, $endDate, $maxItems);
 
@@ -400,11 +398,9 @@ class ClientTest extends TestCase
             $response = new Response(200, [], $expected);
         }
 
-        $httpClient = $this->createMock('GuzzleHttp\Client');
-        $httpClient->expects($this->once())->method('request')
-            ->with('GET', $uri)->willReturn($response);
-
-        $this->setPropertyValue($this->sut, 'httpClient', $httpClient);
+        $this->httpClientMock->request('GET', $uri)
+            ->shouldBeCalled($this->once())
+            ->willReturn($response);
 
         $actual = $this->sut->$method($faxId);
 
@@ -477,8 +473,12 @@ class ClientTest extends TestCase
             $this->expectExceptionMessage($expected->getMessage());
         }
 
-        $response   = new Response($status, [], $body);
-        $actual     = $this->invokeMethod($this->sut, 'getJsonResponse', [$response]);
+        $response = new Response($status, [], $body);
+
+        $method = new \ReflectionMethod($this->sut, 'getJsonResponse');
+        $method->setAccessible(true);
+
+        $actual = $method->invokeArgs($this->sut, [$response]);
 
         $this->assertEquals($expected, $actual);
     }
@@ -517,7 +517,10 @@ class ClientTest extends TestCase
      */
     public function testGetToken()
     {
-        $actual = $this->invokeMethod($this->sut, 'getToken');
+        $testMethod = new \ReflectionMethod($this->sut, 'getToken');
+        $testMethod->setAccessible(true);
+
+        $actual = $testMethod->invoke($this->sut);
 
         $this->assertEquals($this->expectedToken, $actual);
     }
@@ -535,7 +538,11 @@ class ClientTest extends TestCase
             $this->encKey,
             $this->iv
         );
-        $actual     = $this->invokeMethod($sut, 'getTokenDate');
+
+        $testMethod = new \ReflectionMethod($sut, 'getTokenDate');
+        $testMethod->setAccessible(true);
+
+        $actual = $testMethod->invoke($sut);
 
         $this->assertEquals(1, preg_match($pattern, $actual));
     }
@@ -545,7 +552,10 @@ class ClientTest extends TestCase
      */
     public function testGetHttpClient()
     {
-        $actual = $this->invokeMethod($this->sut, 'getHttpClient');
+        $testMethod = new \ReflectionMethod($this->sut, 'getHttpClient');
+        $testMethod->setAccessible(true);
+
+        $actual = $testMethod->invoke($this->sut);
 
         $this->assertInstanceOf('GuzzleHttp\Client', $actual);
     }

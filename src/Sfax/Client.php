@@ -106,7 +106,8 @@ class Client
         $encryptionKey,
         $iv,
         $securityContext = '',
-        $tokenClient = ''
+        $tokenClient = '',
+        HttpClient $httpClient = null
     ) {
         $this->uri              = $uri;
         $this->username         = $username;
@@ -115,6 +116,7 @@ class Client
         $this->iv               = $iv;
         $this->securityContext  = $securityContext;
         $this->tokenClient      = $tokenClient;
+        $this->httpClient       = $httpClient;
     }
 
     /**
