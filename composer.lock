@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "100335a5e7594a0fc0cdb8cd83a325cc",
+    "content-hash": "63e7fa91df095e9602b282dd8e8cc71d",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -856,6 +856,54 @@
             "time": "2020-09-29T09:10:42+00:00"
         },
         {
+            "name": "phpspec/prophecy-phpunit",
+            "version": "v2.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpspec/prophecy-phpunit.git",
+                "reference": "2d7a9df55f257d2cba9b1d0c0963a54960657177"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpspec/prophecy-phpunit/zipball/2d7a9df55f257d2cba9b1d0c0963a54960657177",
+                "reference": "2d7a9df55f257d2cba9b1d0c0963a54960657177",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.3 || ^8",
+                "phpspec/prophecy": "^1.3",
+                "phpunit/phpunit": "^9.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Prophecy\\PhpUnit\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Christophe Coevoet",
+                    "email": "stof@notk.org"
+                }
+            ],
+            "description": "Integrating the Prophecy mocking library in PHPUnit test cases",
+            "homepage": "http://phpspec.net",
+            "keywords": [
+                "phpunit",
+                "prophecy"
+            ],
+            "time": "2020-07-09T08:33:42+00:00"
+        },
+        {
             "name": "phpunit/php-code-coverage",
             "version": "9.2.0",
             "source": {
@@ -1251,50 +1299,6 @@
                 }
             ],
             "time": "2020-10-02T03:54:37+00:00"
-        },
-        {
-            "name": "rootwork/phpunit-helpers",
-            "version": "2.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/rootworkit/phpunit-helpers.git",
-                "reference": "be236c0c891cc49f2641ba7bed8449b2f3b53907"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/rootworkit/phpunit-helpers/zipball/be236c0c891cc49f2641ba7bed8449b2f3b53907",
-                "reference": "be236c0c891cc49f2641ba7bed8449b2f3b53907",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.4"
-            },
-            "require-dev": {
-                "phpunit/phpunit": ">=6.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Rootwork\\PHPUnit\\": "src/PHPUnit/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Mike Soule",
-                    "email": "mike@rootwork.it"
-                }
-            ],
-            "description": "PHPUnit Helpers",
-            "homepage": "https://github.com/rootworkit/phpunit-helpers",
-            "keywords": [
-                "phpunit",
-                "rootwork"
-            ],
-            "time": "2017-06-27T18:21:20+00:00"
         },
         {
             "name": "sebastian/cli-parser",
