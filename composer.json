@@ -13,11 +13,15 @@
     "autoload": {
         "psr-4": { "Rootwork\\Sfax\\": "src/Sfax/" }
     },
+    "scripts": {
+        "test": "XDEBUG_MODE=coverage phpunit",
+        "testdox": "XDEBUG_MODE=coverage phpunit --testdox"
+    },
     "require": {
         "guzzlehttp/guzzle": "^7.1"
     },
     "require-dev": {
-        "rootwork/phpunit-helpers": "^2.0",
-        "phpunit/phpunit": "^9.4"
+        "phpunit/phpunit": "^9.4",
+        "phpspec/prophecy-phpunit": "^2.0"
     }
 }
