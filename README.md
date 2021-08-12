@@ -60,3 +60,15 @@ foreach ($result->InboundFaxItems as $fax) {
     file_put_contents("/faxes/$fax->FaxId.pdf", $fileData);
 }
 ```
+
+## Running Tests
+
+Tests can be run using composer helper scripts, `test` or `testdox`, depending on your output preferences. 
+
+```bash
+composer install
+composer test
+composer testdox
+```
+
+Code coverage reports are written to `build/`.

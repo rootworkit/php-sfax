@@ -2,4 +2,6 @@
 build
 samples
 vendor
+composer.phar
 .DS_Store
+.phpunit.cache
